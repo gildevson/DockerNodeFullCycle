@@ -1,2 +1,5 @@
 mysql/
 .claude/
+node_modules/
+.env
+npm-debug.log*
