@@ -1,6 +1,28 @@
-# hello-express
+# DockerNode — Node.js + MySQL + Nginx com Docker
 
-Aplicação Node.js com Express containerizada via Docker.
+Projeto completo de containerização com **Node.js (Express)**, **MySQL 5.7** e **Nginx** como proxy reverso, orquestrado com **Docker Compose**.
+
+---
+
+## Sumário
+
+| # | Assunto | O que você vai aprender |
+|---|---|---|
+| 1 | [Stack](#stack) | Tecnologias usadas no projeto |
+| 2 | [Estrutura do Projeto](#estrutura-do-projeto) | Mapa de todos os arquivos e pastas |
+| 3 | [Guia por Pasta](#guia-por-pasta) | Como trabalhar dentro de Node/, nginx/ e mysql/ |
+| 4 | [Dockerfile](#dockerfile) | Instruções do Dockerfile explicadas linha a linha |
+| 5 | [Multistage Building](#multistage-building) | Como reduzir o tamanho da imagem com dois estágios |
+| 6 | [Nginx](#nginx) | Como o proxy reverso funciona com Node.js |
+| 7 | [Docker Compose](#docker-compose) | Orquestração dos containers dev e prod |
+| 8 | [MySQL no Docker](#mysql-no-docker) | Como rodar banco de dados em container |
+| 9 | [docker-compose.prod.yml](#docker-composeprodyml-produção) | Cada instrução do arquivo de produção explicada |
+| 10 | [Fluxo de trabalho](#fluxo-de-trabalho-com-múltiplos-terminais) | Como usar 3 terminais ao mesmo tempo |
+| 11 | [Dockerize](#dockerize) | Como fazer o Node esperar o MySQL estar pronto |
+| 12 | [Comandos Docker Compose](#comandos-docker-compose) | Referência rápida de todos os comandos |
+| 13 | [Erros comuns](#erros-comuns) | Erros frequentes e como resolver |
+
+---
 
 ## Stack
 
