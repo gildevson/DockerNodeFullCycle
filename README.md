@@ -8,16 +8,124 @@ Aplicação Node.js com Express containerizada via Docker.
 - Express 5
 - Docker
 
-## Estrutura
+## Estrutura do Projeto
 
 ```
-Node/
-├── dockerfile        # Definição da imagem Docker (desenvolvimento)
-├── dockerfile.prod   # Imagem de produção com Multistage Building
-├── index.js          # Servidor Express (porta 3000)
-├── package.json      # Dependências do projeto
-├── .gitignore        # Arquivos ignorados pelo Git
-└── .dockerignore     # Arquivos ignorados pelo Docker
+DockerNode/
+├── Node/                     # Aplicação Node.js
+│   ├── dockerfile            # Imagem de desenvolvimento
+│   ├── dockerfile.prod       # Imagem de produção (multi-stage)
+│   ├── index.js              # Servidor Express (porta 3000)
+│   ├── package.json          # Dependências npm
+│   ├── .gitignore            # Arquivos ignorados pelo Git
+│   └── .dockerignore         # Arquivos ignorados pelo Docker
+├── nginx/                    # Configuração do proxy reverso
+│   ├── dockerfile.prod       # Imagem do Nginx
+│   └── nginx.conf            # Regras de proxy para o Node
+├── mysql/                    # Dados persistidos do banco (gerado pelo Docker)
+│   ├── ibdata1               # Dados do InnoDB
+│   ├── ib_logfile0/1         # Logs de transação
+│   └── nodedb/               # Banco nodedb (tabelas criadas)
+├── docker-compose.yml        # Orquestração desenvolvimento
+├── docker-compose.prod.yml   # Orquestração produção (com MySQL)
+├── .gitignore                # Ignora mysql/ e .claude/
+└── README.md                 # Esta documentação
+```
+
+---
+
+## Guia por pasta
+
+### Pasta [Node/](Node/)
+
+Contém toda a aplicação Express.
+
+| Arquivo | Caminho | O que faz |
+|---|---|---|
+| Servidor | [Node/index.js](Node/index.js) | Aplicação Express — rotas e conexão com MySQL |
+| Dockerfile dev | [Node/dockerfile](Node/dockerfile) | Imagem com Node:22 + dockerize instalado |
+| Dockerfile prod | [Node/dockerfile.prod](Node/dockerfile.prod) | Multi-stage: builder (node:22) + final (alpine) |
+| Dependências | [Node/package.json](Node/package.json) | Lista pacotes: express, mysql |
+| Ignorados Docker | [Node/.dockerignore](Node/.dockerignore) | Exclui `node_modules/` do build |
+
+**Como instalar pacotes:**
+```bash
+cd C:\fullCycle\DockerNode\Node
+npm install <pacote>
+```
+
+**Como entrar no container Node:**
+```bash
+docker exec -it node sh
+```
+
+**Ver logs da aplicação:**
+```bash
+docker logs -f node
+```
+
+---
+
+### Pasta [nginx/](nginx/)
+
+Configura o proxy reverso que fica na frente do Node.
+
+| Arquivo | Caminho | O que faz |
+|---|---|---|
+| Dockerfile | [nginx/dockerfile.prod](nginx/dockerfile.prod) | Imagem nginx:alpine com conf personalizada |
+| Configuração | [nginx/nginx.conf](nginx/nginx.conf) | Redireciona porta 80 → Node:3000 |
+
+**Como funciona o nginx.conf:**
+```nginx
+server {
+    listen 80;
+    location / {
+        proxy_pass http://node:3000;  # redireciona para o container node
+    }
+}
+```
+
+**Como entrar no container Nginx:**
+```bash
+docker exec -it nginx sh
+```
+
+**Ver logs do Nginx:**
+```bash
+docker logs -f nginx
+```
+
+---
+
+### Pasta [mysql/](mysql/)
+
+Criada automaticamente pelo Docker para persistir os dados do banco. **Não edite os arquivos manualmente.**
+
+| Arquivo/Pasta | O que contém |
+|---|---|
+| `ibdata1` | Dados principais do InnoDB |
+| `ib_logfile0`, `ib_logfile1` | Logs de transação do MySQL |
+| `auto.cnf` | UUID único do servidor MySQL |
+| `nodedb/` | Pasta do banco `nodedb` com as tabelas |
+| `*.pem` | Certificados SSL do MySQL |
+
+**Esta pasta:**
+- Está no [.gitignore](.gitignore) — não vai para o GitHub
+- Sobrevive ao `docker compose down` — dados são mantidos
+- Para resetar o banco, delete a pasta e suba novamente:
+
+```bash
+docker compose -f docker-compose.prod.yml down
+rm -rf ./mysql
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+**Como entrar no banco:**
+```bash
+docker exec -it db bash
+mysql -uroot -proot
+use nodedb;
+show tables;
 ```
 
 ## Dockerfile
